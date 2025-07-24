@@ -1,50 +1,66 @@
-import random
 import os
 import time
 
 WIDTH = 20
 HEIGHT = 20
-MAX_STATE = 2
-THRESHOLD = 6
 GENERATIONS = 50
 
-def create_board():
-    return [[random.randint(0, MAX_STATE) for _ in range(WIDTH)] for _ in range(HEIGHT)]
+HEALTHY = 0
+INFECTED = 1
+IMMUNE = 2
+RECOVERING = 3
+NUM_STATES = 4
+INFECTION_THRESHOLD = 2
 
-def count_neighbors(board, x, y):
-    total = 0
-    for dx in [-1,0,1]:
-        for dy in [-1,0,1]:
+def create_board():
+    board = [[HEALTHY for _ in range(WIDTH)] for _ in range(HEIGHT)]
+    board[HEIGHT // 2][WIDTH // 2] = INFECTED
+    return board
+
+def count_infected_neighbors(board, x, y):
+    infected = 0
+    for dx in [-1, 0, 1]:
+        for dy in [-1, 0, 1]:
             if dx == 0 and dy == 0:
                 continue
-            nx, ny = x+dx, y+dy
+            nx, ny = x + dx, y + dy
             if 0 <= nx < HEIGHT and 0 <= ny < WIDTH:
-                total += board[nx][ny]
-    return total
+                if board[nx][ny] == INFECTED:
+                    infected += 1
+    return infected
 
 def next_generation(board):
-    new_board = [[0]*WIDTH for _ in range(HEIGHT)]
+    new_board = [[HEALTHY for _ in range(WIDTH)] for _ in range(HEIGHT)]
     for x in range(HEIGHT):
         for y in range(WIDTH):
-            neighbors = count_neighbors(board, x, y)
-            if neighbors >= THRESHOLD:
-                new_board[x][y] = (board[x][y]+1) % (MAX_STATE+1)
-            else:
-                new_board[x][y] = board[x][y]
+            state = board[x][y]
+            infected_neighbors = count_infected_neighbors(board, x, y)
+
+            if state == HEALTHY:
+                if infected_neighbors >= INFECTION_THRESHOLD:
+                    new_board[x][y] = INFECTED
+                else:
+                    new_board[x][y] = HEALTHY
+            elif state == INFECTED:
+                new_board[x][y] = IMMUNE
+            elif state == IMMUNE:
+                new_board[x][y] = RECOVERING
+            elif state == RECOVERING:
+                new_board[x][y] = HEALTHY
     return new_board
 
 def print_board(board):
     os.system('cls' if os.name == 'nt' else 'clear')
-    symbols = [' ', '.', '*']
+    symbols = [' ', '*', 'o', '.']  # Saudável, Infectado, Imune, Recuperando
     for row in board:
-        print(''.join([symbols[cell] for cell in row]))
+        print(''.join(symbols[cell] for cell in row))
 
 def main():
     board = create_board()
     for _ in range(GENERATIONS):
         print_board(board)
         board = next_generation(board)
-        time.sleep(0.2)
+        time.sleep(0.3)
 
 if __name__ == "__main__":
     main()
