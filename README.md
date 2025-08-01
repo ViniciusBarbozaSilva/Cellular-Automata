@@ -17,3 +17,10 @@ No terminal, execute:
 
 ```bash
 git clone (https://github.com/ViniciusBarbozaSilva/Cellular-Automata)
+
+▶️ Execute a simulação
+No terminal, execute:
+
+```bash
+python multi_state_automaton.py
+
